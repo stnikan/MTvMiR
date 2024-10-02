@@ -9,147 +9,84 @@
 #include <util/delay.h> //для использования пауз
 #include <avr/interrupt.h>
 
-
-
-void lcdCmd(uint8_t cmd)
-{                                   // посыл команды на экран
-    DDRC = 0xFF;                    // все разряды PORTC на выход
-    DDRD |= ((1 << E) | (1 << RS)); // разряды PORTD на выход
-    PORTD &= ~(1 << RS);            // выбор регистра команд RS=0
-    PORTC = cmd;                    // записать команду в порт PORTC
-    PORTD |= (1 << E);              // \ сформировать на
-    _delay_us(5);                   // | выводе E строб 1-0
-    PORTD &= ~(1 << E);             // / передачи команды
-    _delay_ms(10);                  // задержка для завершения записи
-}
-void lcdInit(void)
-{                                   // инициализация (ВКЛ) экрана
-    DDRC = 0xFF;                    // все разряды PORTC на выход
-    DDRD |= ((1 << E) | (1 << RS)); // разряды PORTD на выход
-    _delay_ms(100);                 // задержка для установления питания
-    lcdCmd(0x30);                   // \ вывод
-    lcdCmd(0x30);                   // | трех
-    lcdCmd(0x30);                   // / команд 0x30
-    lcdCmd(0x38);                   // 8 разр.шина, 2 строки, 5 × 7 точек
-    lcdCmd(0x0C);                   // включить ЖКИ
-    lcdCmd(0x06);                   // инкремент курсора, без сдвига экрана
-    lcdCmd(0x01);                   // очистить экран, курсор в начало
-}
-void lcdData(uint8_t data)
-{ // посыл данных на экран
-    DDRC = 0xFF;
-    DDRD |= ((1 << E) | (1 << RS));
-    PORTD |= (1 << RS);
-    PORTC = data;
-    PORTD |= (1 << E);
-    _delay_us(5);
-    PORTD &= ~(1 << E);
-    _delay_ms(1);
-}
-
-int16_t angle = 0;
-
-ISR(INT0_vect) // прерывания по инкодеру
+uint16_t read_adc(uint8_t channel)
 {
-    int8_t delta = 0;
-    if ((PIND & (1 << 0)) != 0)
-    {
-        EICRA = (1 << ISC01) | (1 << ISC21);
-        if ((PIND & (1 << 1)) != 0)
-            delta = 5;
-        else
-            delta = -5;
-    }
-    else
-    {
-        EICRA = (1 << ISC01) | (1 << ISC00) | (1 << ISC21);
-        if ((PIND & (1 << 1)) != 0)
-            delta = -5;
-        else
-            delta = 5;
-    }
-    switch (my_color)
-    {
-    case 0:
-        myColorRed += delta;
-        break;
-    case 1:
-        myColorGreen += delta;
-        break;
-    case 2:
-        myColorBlue += delta;
-        break;
-
-    default:
-        break;
-    }
+    // AVCC + левое выравнивание + выбор канала
+    ADMUX = (1 << REFS0) | channel;
+    ADCSRA |= (1 << ADSC); // Начало преобразования
+    // Ждем окончания преобразования АЦП
+    while (!(ADCSRA & (1 << ADIF)))
+        ;
+    // Сброс флага завершения преобразования
+    ADCSRA |= (1 << ADIF);
+    //uint8_t low = ADCL;
+    uint16_t my_acp =ADCL| (ADCH<<8);
+    return (my_acp); // возвращаем старшие 8 бит результата
 }
-ISR(INT2_vect) { my_color = (my_color + 1) % 3; }
-
-uint8_t TabCon[] = {0x41, 0xA0, 0x42, 0xA1, 0xE0, 0x45, 0xA3, 0xA4,
-                    0xA5, 0xA6, 0x4B, 0xA7, 0x4D, 0x48, 0x4F, 0xA8, 0x50, 0x43, 0x54, 0xA9,
-                    0xAA, 0x58, 0xE1, 0xAB, 0xAC, 0xE2, 0xAD, 0xAE, 0x62, 0xAF, 0xB0, 0xB1,
-                    0x61, 0xB2, 0xB3, 0xB4, 0xE3, 0x65, 0xB6, 0xB7, 0xB8, 0xB9, 0xBA, 0xBB,
-                    0xBC, 0xBD, 0x6F, 0xBE, 0x70, 0x63, 0xBF, 0x79, 0x5C, 0x78, 0xE5, 0xC0,
-                    0xC1, 0xE6, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7};
-uint8_t Code(uint8_t symb)
-{
-    //[]------------------------------------------------[]
-    //| Назначение: перекодировка символов кириллицы |
-    //| Входные параметры: symb – символ ASCII |
-    //| Функция возвращает код отображения символа |
-    //[]------------------------------------------------[]
-    uint8_t a = symb >= 192 ? TabCon[symb - 192] : symb;
-    return a;
+uint8_t read_adcH(uint8_t channel) {
+ // AVCC + левое выравнивание + выбор канала
+ ADMUX = (1<<REFS0) | channel;
+ ADCSRA |= (1<<ADSC); // Начало преобразования
+ // Ждем окончания преобразования АЦП
+ while(!(ADCSRA & (1<<ADIF)));
+ // Сброс флага завершения преобразования
+ ADCSRA |= (1<<ADIF);
+ return(ADCH); // возвращаем старшие 8 бит результата
 }
-
-void my_print(void)
-{
-    char c[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-    lcdCmd((1 << 7) | 2);
-    lcdData(c[myColorRed / 100]);
-    lcdData(c[(myColorRed / 10) % 10]);
-    lcdData(c[myColorRed % 10]);
-    lcdCmd((1 << 7) | 7);
-    lcdData(c[myColorGreen / 100]);
-    lcdData(c[(myColorGreen / 10) % 10]);
-    lcdData(c[myColorGreen % 10]);
-    lcdCmd((1 << 7) | 12);
-    lcdData(c[myColorBlue / 100]);
-    lcdData(c[(myColorBlue / 10) % 10]);
-    lcdData(c[myColorBlue % 10]);
+uint8_t read_adcL(uint8_t channel) {
+ // AVCC + левое выравнивание + выбор канала
+ ADMUX = (1<<REFS0) | channel;
+ ADCSRA |= (1<<ADSC); // Начало преобразования
+ // Ждем окончания преобразования АЦП
+ while(!(ADCSRA & (1<<ADIF)));
+ // Сброс флага завершения преобразования
+ ADCSRA |= (1<<ADIF);
+ return(ADCL); // возвращаем старшие 8 бит результата
 }
-
 int main(void)
 {
-    sei();
-    lcdInit();
+    // sei();
+    //  lcdInit();
 
-    EIMSK |= (1 << INT0);
+    // прерывания для энкодера
+    /*EIMSK |= (1 << INT0);
     EIMSK |= (1 << INT2);
-    EICRA = (1 << ISC01) | (1 << ISC00) | (1 << ISC21);
+    EICRA = (1 << ISC01) | (1 << ISC00) | (1 << ISC21);*/
 
     DDRE = (1 << 3) | (1 << 4) | (1 << 5);
     /* Инициализация таймера №3. 8-ми битная быстрая
     ШИМ, преддедитель на 8 */
-    TCCR3A = (1 << COM3A1) | (1 << COM3B1) | (1 << COM3C1) | (1 << WGM30);
-    TCCR3B = (1 << WGM32) | (1 << CS31);
-    OCR3AH = 0;
-    OCR3AL = 128;
+    TCCR3A = (1 << COM3A1) | (1 << COM3B1) | (1 << COM3C1) | (1 << WGM30) | (1 << WGM31);
+    TCCR3B = (1 << CS30)| (1 << WGM32);
 
-    char Start_str[] = {'R', ':', ' ', ' ', ' ', 'G', ':', ' ', ' ', ' ', 'B', ':'};
-    lcdCmd((1 << 7) | 0);
-    for (uint8_t i = 0; i < 12; i++)
-    {
-        lcdData(Start_str[i]);
-    }
+    // OCR3AH = 3; // сброс по совпадению, это ограничение
+    // OCR3AL = 255;
+
+    // включение ацп
+    ADCSRA = (1 << ADEN);
+
+    //uint16_t myColor = 0;
+    uint8_t i = 0;
 
     while (1)
     {
-        my_print();
-        OCR3A = myColorBlue;
-        OCR3B = myColorGreen;
-        OCR3C = myColorRed;
-        _delay_us(100);
+        // char c[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+        // myColor = read_adc(3);
+        // ADMUX = (1 << REFS0) | 3;
+        // ADCSRA |= (1 << ADSC); // Начало преобразования
+        // // Ждем окончания преобразования АЦП
+        // while(!(ADCSRA & (1 << ADIF)));
+        // // Сброс флага завершения преобразования
+        // ADCSRA |= (1 << ADIF);
+        // uint16_t my_acp = (ADCH<<8) | (ADCL);
+        
+        //OCR3AH = ADCH;
+        //OCR3AH = read_adc(3);
+        //OCR3AH = read_adcH(3);
+        //OCR3AL = 0;//read_adcL(3);
+        OCR3AH = read_adc(3)>>8;
+        OCR3AL = read_adc(3);
+        //OCR3AL = read_adc(3);
+        //_delay_ms(100);
     }
 }
