@@ -6,18 +6,10 @@
 //  */
 
 #include <avr/io.h>
-// #define F_CPU 11059200
 #include <util/delay.h> //для использования пауз
-
 #include <avr/interrupt.h>
 
-#define E 6
-#define RS 7
 
-uint8_t my_color = 0;
-uint8_t myColorRed = 0;
-uint8_t myColorGreen = 0;
-uint8_t myColorBlue = 0;
 
 void lcdCmd(uint8_t cmd)
 {                                   // посыл команды на экран

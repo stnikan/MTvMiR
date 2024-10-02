@@ -3,7 +3,7 @@
         {
             "name": "AVR",
             "intelliSenseMode": "${default}",
-            "compilerPath": "",
+            "compilerPath": "C:\\my_program\\avr-gcc-12.1.0_avrdude-7.0\\bin\\avr-gcc.exe",
             "cStandard": "${default}",
             "cppStandard": "${default}",
             "includePath": [],
@@ -17,7 +17,9 @@
                 "-fno-threadsafe-statics",
                 "-ffunction-sections",
                 "-fdata-sections",
-                "-pipe"
+                "-pipe",
+                "-mmcu=atmega128a",
+                "-DF_CPU=11059200UL"
             ]
         }
     ],
