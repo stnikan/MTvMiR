@@ -9,5 +9,9 @@
     "AVR.device.frequency": 11059200,
     "AVR.programmer.type": "stk500",
     "AVR.programmer.port": "COM5",
-    "AVR.programmer.rate": 115200
+    "AVR.programmer.rate": 115200,
+    "files.associations": {
+        "delay.h": "c",
+        "interrupt.h": "c"
+    }
 }

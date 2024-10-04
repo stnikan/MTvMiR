@@ -1,0 +1,7 @@
+{
+    "AVR.source.compiler": "C:\\my_program\\avr-gcc-12.1.0_avrdude-7.0\\bin\\avr-gcc.exe",
+    "AVR.programmer.tool": "C:\\my_program\\avr-gcc-12.1.0_avrdude-7.0\\bin\\avrdude.exe",
+    "AVR.source.libraries": [],
+    "AVR.device.type": "atmega128a",
+    "AVR.device.frequency": 110592000
+}
