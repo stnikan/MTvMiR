@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "adc.h": "c"
+    },
+    "AVR.device.type": "atmega128a"
+}

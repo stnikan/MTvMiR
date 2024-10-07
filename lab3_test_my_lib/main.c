@@ -9,7 +9,7 @@
 #include <util/delay.h> //для использования пауз
 #include <avr/interrupt.h>
 
-#include ".\..\sourse\ADC.h"
+#include "..\sourse\ADC.h"
 
 int main(void)
 {

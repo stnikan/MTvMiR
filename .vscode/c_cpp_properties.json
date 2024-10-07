@@ -17,7 +17,8 @@
                 "-fno-threadsafe-statics",
                 "-ffunction-sections",
                 "-fdata-sections",
-                "-pipe"
+                "-pipe",
+                "-mmcu=atmega128a"
             ]
         }
     ],
