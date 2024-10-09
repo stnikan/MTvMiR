@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "name": "AVR",
+            "intelliSenseMode": "${default}",
+            "compilerPath": "C:\\my_program\\avr-gcc-12.1.0_avrdude-7.0\\bin\\avr-gcc.exe",
+            "cStandard": "${default}",
+            "cppStandard": "${default}",
+            "includePath": [],
+            "compilerArgs": [
+                "-g",
+                "-Os",
+                "-Wall",
+                "-Wextra",
+                "-fpermissive",
+                "-fno-exceptions",
+                "-fno-threadsafe-statics",
+                "-ffunction-sections",
+                "-fdata-sections",
+                "-pipe",
+                "-mmcu=atmega128a"
+            ]
+        }
+    ],
+    "version": 4
+}
