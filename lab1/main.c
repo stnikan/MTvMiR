@@ -40,7 +40,9 @@ ISR(INT0_vect)
     if (angle<-9999){angle=9999;}
     
 }
+
 ISR(INT2_vect){angle=0;}
+
 uint16_t raz(uint8_t k) // определяет разрядность числа
 {
     uint16_t a = 1;
@@ -67,18 +69,16 @@ int main(void)
         // костыль чтобы нули до первой не нулевой цифры не рисовались
         uint8_t k = 0;
         uint8_t flag = 1;
-        if (angle < 0)
-        {
-            PORTC = 0b01000000; // вгружаем в по порту нашу цифру
+        if (angle < 0){ // Рисуем минус
+            PORTC = 0b01000000; 
             PORTA = 1 << (1);
             _delay_us(3);
             PORTA = 0x00;
-            abs = -angle/10;
+            abs = -angle/10; 
         }
         else
         {
-            PORTC = 0b00000000; // вгружаем в по порту нашу цифру
-            // выбираем разряд в который будем рисовать
+            PORTC = 0b00000000; // не рисуем минус
             PORTA = 1 << (1);
             _delay_us(3);
             PORTA = 0x00;
@@ -103,6 +103,5 @@ int main(void)
             _delay_us(3);
             PORTA = 0x00;
         }
-        // считаем число для следующего шага
     }
 }

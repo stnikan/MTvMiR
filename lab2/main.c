@@ -55,8 +55,6 @@ void lcdData(uint8_t data)
     _delay_ms(1);
 }
 
-int16_t angle = 0;
-
 ISR(INT0_vect) // прерывания по инкодеру
 {
     int8_t delta = 0;

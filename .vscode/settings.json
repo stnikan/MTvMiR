@@ -1,6 +1,7 @@
 {
     "files.associations": {
-        "adc.h": "c"
+        "adc.h": "c",
+        "delay.h": "c"
     },
     "AVR.device.type": "atmega128a"
 }
