@@ -91,7 +91,8 @@ int main(void)
 
     //uint16_t myColor = 0;
     uint8_t i = 0;
-
+    uint16_t my_red = 0;
+    char c[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
     while (1)
     {
         // char c[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
@@ -110,6 +111,16 @@ int main(void)
         //OCR3AL = 0;//read_adcL(3);
         OCR3AH = read_adc(3)>>8;
         OCR3AL = read_adc(3);
+        OCR3BH = read_adc(3)>>8;
+        OCR3BL = read_adc(3);
+        my_red = read_adc(3);
+        
+        
+        lcdCmd((1 << 7) | 5);
+        lcdData(c[my_red / 1000]);
+        lcdData(c[(my_red / 100) % 10]);
+        lcdData(c[(my_red / 10) % 10]);
+        lcdData(c[my_red % 10]);
         //OCR3AL = read_adc(3);
         //_delay_ms(100);
     }

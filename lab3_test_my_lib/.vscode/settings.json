@@ -3,5 +3,8 @@
     "AVR.programmer.tool": "C:\\my_program\\avr-gcc-12.1.0_avrdude-7.0\\bin\\avrdude.exe",
     "AVR.source.libraries": [],
     "AVR.device.type": "atmega128a",
-    "AVR.device.frequency": 110592000
+    "AVR.device.frequency": 110592000,
+    "AVR.programmer.type": "stk500",
+    "AVR.programmer.port": "COM5",
+    "AVR.programmer.rate": 115200
 }
