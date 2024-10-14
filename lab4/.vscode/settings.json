@@ -8,5 +8,6 @@
     "AVR.programmer.rate": 115200,
     "files.associations": {
         "adc.h": "c"
-    }
+    },
+    "AVR.device.frequency": 11059200
 }
