@@ -80,7 +80,7 @@ int main(void)
     DDRE = (1 << 3) | (1 << 4) | (1 << 5);
     /* Инициализация таймера №3. 8-ми битная быстрая
     ШИМ, преддедитель на 8 */
-    TCCR3A = (1 << COM3A1) | (1 << COM3B1) | (1 << COM3C1) | (1 << WGM30) | (1 << WGM31);
+    TCCR3A = (1 << COM3A1) | (1 << COM3B1) | (1 << COM3C1)|(1 << COM3A0) | (1 << COM3B0) | (1 << COM3C0)  | (1 << WGM30) | (1 << WGM31);
     TCCR3B = (1 << CS30)| (1 << WGM32);
 
     // OCR3AH = 3; // сброс по совпадению, это ограничение
@@ -109,10 +109,11 @@ int main(void)
         //OCR3AH = read_adc(3);
         //OCR3AH = read_adcH(3);
         //OCR3AL = 0;//read_adcL(3);
-        OCR3AH = read_adc(3)>>8;
-        OCR3AL = read_adc(3);
-        OCR3BH = read_adc(3)>>8;
-        OCR3BL = read_adc(3);
+        
+        OCR3A = 1023 - read_adc(3);
+        OCR3B = 1023 - read_adc(3);
+        
+        OCR3C = 1023;
         my_red = read_adc(3);
         
         
