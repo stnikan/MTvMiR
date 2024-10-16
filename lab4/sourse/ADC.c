@@ -5,7 +5,7 @@
 void init_ADC(uint8_t num, uint8_t arg, ...)
 {
     ADCSRA = 0;
-    uint8_t *p = &arg;
+    uint16_t *p = &arg;
     while (num--)
     {
         /* code */
