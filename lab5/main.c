@@ -77,7 +77,7 @@ int main(void)
         }
         else
         {
-            OCR3B = 923; // green
+            OCR3B = 923;// green
             OCR3A = 1023;//blue
             OCR3C = 1023;//red
         }
