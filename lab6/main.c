@@ -104,7 +104,7 @@ int main(void)
             matrDrawPict(DEV_ADDR, pict5);
             _delay_ms(100);
             matrDrawPict(DEV_ADDR, pict6);
-            _delay_ms(1000);
+            _delay_ms(1000);  
             
             
 
