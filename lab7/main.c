@@ -4,63 +4,32 @@
 
 int16_t angle = 0;
 
-// ISR(INT0_vect)
-// {
-//     if ((PCINT18) != 0)
-//     {
-//         if ((PCINT23) == 0)
-//         {
-//             angle -= 1;
-//         }
-//         else
-//         {
-//             angle += 1;
-//         }
-//     }
-
-//     // if ((PCINT18) == 0)
-//     // {
-//     //     if ((PCINT23) == 0)
-//     //     {
-//     //         angle -= 1;
-//     //     }
-//     //     else
-//     //     {
-//     //         angle += 1;
-//     //     }
-//     // }
-//     // else
-//     // {
-//     //     if ((PCINT23) == 0)
-//     //     {
-//     //         angle += 1;
-//     //     }
-//     //     else
-//     //     {
-//     //         angle -= 1;
-//     //     }
-//     // }
-// }
 ISR(INT0_vect)
 {
-    if (PCINT18 != 0)
+    if (PORTD2 == 0)
     {
-        EICRA = (1 << 1);
-        if (PCINT23 != 0)
+        // EICRA = (1 << 1);
+        if (PORTD7 != 0)
+        {
             angle += 9;
+        }
         else
+        {
             angle -= 9;
+        }
     }
     else
     {
-        EICRA = (1 << 1) | (1 << 0);
-        if (PCINT23 != 0)
+        if (PORTD7 != 0)
+        {
             angle -= 9;
+        }
         else
+        {
             angle += 9;
+        }
     }
 }
-
 
 void spiInit(void)
 { // инициализация аппаратной части SPI
@@ -69,7 +38,6 @@ void spiInit(void)
     // включить аппаратный SPI, режим 0, предделитель на 128
     SPCR = (1 << SPE) | (1 << MSTR) | (1 << SPR1) | (1 << SPR0);
 }
-
 /*функция для выделения из трёхразрядного числа d разряда
 m; например, digit(14, 3) = 4; или digit(591, 1) = 5 */
 uint16_t raz(uint8_t k) // определяет разрядность числа
@@ -152,7 +120,7 @@ int main(void)
 {
     spiInit();
 
-    EICRA = (1 << 0); //| 1 << 1);
+    EICRA = (1 << ISC00); //| 1 << 1);
     EIMSK = (1 << 0);
     sei();
     uint16_t test = 0;
