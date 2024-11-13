@@ -46,35 +46,46 @@ void lcdData(uint8_t data)
     PORTD &= ~(1 << E);
     _delay_ms(1);
 }
-void my_lcdInit()
-{
-    // uint8_t hello[] = {'fiel:000 ref:000 '}
-}
-void my_out(uint16_t a, uint16_t b, int16_t d)
-{
-    char c[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-    lcdCmd((1 << 7) | 1);
-    lcdData(c[a / 1000]);
-    lcdData(c[(a / 100) % 10]);
-    lcdData(c[(a / 10) % 10]);
-    lcdData(c[a % 10]);
-    lcdCmd((1 << 7) | 7);
-    lcdData(c[b / 1000]);
-    lcdData(c[(b / 100) % 10]);
-    lcdData(c[(b / 10) % 10]);
-    lcdData(c[b % 10]);
 
-    lcdCmd((1 << 7) | 67);
+void my_out(uint16_t a, uint16_t b, int16_t c, int16_t d)
+{
+    char my_char[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+    lcdCmd((1 << 7) | 0);
+    lcdData(my_char[a / 1000]);
+    lcdData(my_char[(a / 100) % 10]);
+    lcdData(my_char[(a / 10) % 10]);
+    lcdData(my_char[a % 10]);
+
+    lcdCmd((1 << 7) | 5);
+    lcdData(my_char[b / 1000]);
+    lcdData(my_char[(b / 100) % 10]);
+    lcdData(my_char[(b / 10) % 10]);
+    lcdData(my_char[b % 10]);
+
+    lcdCmd((1 << 7) | 10);
+    if (c < 0)
+    {
+        lcdData('-');
+        c = -c;
+    }
+    else{lcdData(' ');}
+    lcdData(my_char[c / 1000]);
+    lcdData(my_char[(c / 100) % 10]);
+    lcdData(my_char[(c / 10) % 10]);
+    lcdData(my_char[c % 10]);
+
+    lcdCmd((1 << 7) | 64);
     if (d < 0)
     {
         lcdData('-');
         d = -d;
     }
-    lcdData(c[d / 10000]);
-    lcdData(c[(d / 1000) % 10]);
-    lcdData(c[(d / 100) % 10]);
-    lcdData(c[(d / 10) % 10]);
-    lcdData(c[d % 10]);
+    else{lcdData(' ');}
+    lcdData(my_char[d / 10000]);
+    lcdData(my_char[(d / 1000) % 10]);
+    lcdData(my_char[(d / 100) % 10]);
+    lcdData(my_char[(d / 10) % 10]);
+    lcdData(my_char[d % 10]);
 }
 
 uint8_t readAdc(uint8_t channel)
@@ -86,6 +97,10 @@ uint8_t readAdc(uint8_t channel)
         ;
     ADCSRA |= _BV(ADIF);
     return ADCH;
+}
+
+void magnit(){
+
 }
 
 int main(void)
@@ -104,7 +119,7 @@ int main(void)
     /* переменные магнитного поля, ошибки регулирования и
     управления (здесь будут ещё переменные, например,
     значение ошибки регулирования на предыдущем шаге)*/
-    int16_t field, error = 0, preerr = 0, ref, control;
+    int16_t field, error = 0, pre_err = 0, ref, control;
     int16_t p = 0, i = 0, d = 0;
     int16_t help = 0;
     // PORTG = (1 << 3);
@@ -112,21 +127,21 @@ int main(void)
     while (1)
     {
         field = (readAdc(1) + readAdc(1) + readAdc(1)) / 3;
-        help = ((readAdc(3) + readAdc(3) + readAdc(3)) / 3) * 90 / 255;
-        ref = 50;
+        help = ((readAdc(3) + readAdc(3) + readAdc(3)) / 3); // * 90 / 255; //выравнивание макс управления
+        ref = 70;
         error = ref - field;
 
         p = error;
-        d = error - preerr;
+        d = error - pre_err;
         i += error;
-        control = p * help/10 + i * 0 + d * 0;
-        my_out(field, ref, control);
-        if (field > 95)
-        {
-            PORTG |= (1 << 3);
-            OCR1A = 100;
-            
-        }
+
+        control = p * (1950)/100 + (i * 0)/1000 + d *0;
+        my_out(field, help, error, control);
+        // if (field > 110)
+        // {
+        //     PORTG |= (1 << 3);
+        //     OCR1A = 100;  
+        // }
 
         if (control >= 0)
         {   
