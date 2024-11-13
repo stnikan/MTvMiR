@@ -62,7 +62,7 @@ void my_out(uint16_t a, uint16_t b, int16_t c, int16_t d)
     lcdData(my_char[(b / 10) % 10]);
     lcdData(my_char[b % 10]);
 
-    lcdCmd((1 << 7) | 10);
+    lcdCmd((1 << 7) | 9);
     if (c < 0)
     {
         lcdData('-');
@@ -135,7 +135,7 @@ int main(void)
         d = error - pre_err;
         i += error;
 
-        control = p * (1950)/100 + (i * 0)/1000 + d *0;
+        control = (p * 1950)/100 + (i * 0)/1000 + d *0;
         my_out(field, help, error, control);
         // if (field > 110)
         // {
