@@ -62,13 +62,16 @@ void my_out(uint16_t a, uint16_t b, int16_t c, int16_t d)
     lcdData(my_char[(b / 10) % 10]);
     lcdData(my_char[b % 10]);
 
-    lcdCmd((1 << 7) | 9);
+    lcdCmd((1 << 7) | 10);
     if (c < 0)
     {
         lcdData('-');
         c = -c;
     }
-    else{lcdData(' ');}
+    else
+    {
+        lcdData(' ');
+    }
     lcdData(my_char[c / 1000]);
     lcdData(my_char[(c / 100) % 10]);
     lcdData(my_char[(c / 10) % 10]);
@@ -80,7 +83,10 @@ void my_out(uint16_t a, uint16_t b, int16_t c, int16_t d)
         lcdData('-');
         d = -d;
     }
-    else{lcdData(' ');}
+    else
+    {
+        lcdData(' ');
+    }
     lcdData(my_char[d / 10000]);
     lcdData(my_char[(d / 1000) % 10]);
     lcdData(my_char[(d / 100) % 10]);
@@ -99,8 +105,8 @@ uint8_t readAdc(uint8_t channel)
     return ADCH;
 }
 
-void magnit(){
-
+void magnit()
+{
 }
 
 int main(void)
@@ -116,47 +122,68 @@ int main(void)
     // Инициализация таймера 1. Быстрая ШИМ 10 бит
     TCCR1A = _BV(COM1A1) | _BV(WGM10) | _BV(WGM11);
     TCCR1B = _BV(WGM12) | _BV(CS10);
+
+    DDRE = (1 << 3) | (1 << 4) | (1 << 5);
+    TCCR3A = (1 << COM3A1) | (1 << COM3B1) | (1 << COM3C1) | _BV(WGM30) | _BV(WGM31);
+    TCCR3B = _BV(WGM32) | _BV(CS10);
     /* переменные магнитного поля, ошибки регулирования и
     управления (здесь будут ещё переменные, например,
     значение ошибки регулирования на предыдущем шаге)*/
-    int16_t field, error = 0, pre_err = 0, ref, control;
+    int16_t field, error = 0, pre_err = 0, ref;
+    float control;
+    int16_t out;
     int16_t p = 0, i = 0, d = 0;
     int16_t help = 0;
+    PORTG &= ~(1 << 3); // притягивание при 255
     // PORTG = (1 << 3);
     // OCR1A = 255;
     while (1)
     {
         field = (readAdc(1) + readAdc(1) + readAdc(1)) / 3;
-        help = ((readAdc(3) + readAdc(3) + readAdc(3)) / 3); // * 90 / 255; //выравнивание макс управления
-        ref = 70;
+        help = ((readAdc(3) + readAdc(3) + readAdc(3)) / 3)  ; // выравнивание макс управления
+        ref = 40;
         error = ref - field;
 
         p = error;
         d = error - pre_err;
         i += error;
 
-        control = (p * 1950)/100 + (i * 0)/1000 + d *0;
-        my_out(field, help, error, control);
-        // if (field > 110)
-        // {
-        //     PORTG |= (1 << 3);
-        //     OCR1A = 100;  
-        // }
+        control = (p * 13.5) + (i * 0.002) + d * 0.015;
+
+        if (i < 0)
+        {
+            //control-=50;
+            OCR3C =100;
+        }else{OCR3C=0;}
+        
 
         if (control >= 0)
         {   
-            if (control > 1023){control = 1023;}
-            PORTG &= ~(1 << 3); // притягивание при 255
-            OCR1A = control;
+            OCR3B = 0;
+            if (control >= 512)
+            {
+                out = 1023;
+            }
+            else
+            {
+                out = 512 + control;
+            }
         }
         else
         {   
-            control = -control;
-            if (control > 1023){control = 1023;}
-            PORTG |= (1 << 3); // отталкивание
-            OCR1A = control;
+            OCR3B = 100;
+            if (control <= -512)
+            {
+                out = 0;
+            }
+            else
+            {   
+                
+                out = 512 + control;
+            }
         }
-
-        _delay_ms(10);
+        OCR1A = out;
+        OCR3A = out>>3;
+        //my_out(field, help, error, out);
     }
 }
